@@ -39,10 +39,6 @@ const validateSignup = [
 ];
 
 const validateLogin = [
-    body("name")
-        .isString().withMessage("Name must be a string")
-        .notEmpty().withMessage("Name is required"),
-
     body("email")
         .isString().withMessage("Email must be a string")
         .notEmpty().withMessage("Email is required"),
@@ -93,9 +89,9 @@ router.post("/login", validateLogin, async (req, res) => {
         if (!errors.isEmpty())
             return res.status(400).json({ errors: errors.array() });
 
-        const { name, email, password } = req.body;
+        const { email, password } = req.body;
 
-        const user = await User.findOne({ name });
+        const user = await User.findOne({ email });
         if (!user) return res.status(401).json({ error: "Invalid credentials" });
 
         const ok = await bcrypt.compare(password, user.password);
@@ -112,7 +108,7 @@ router.post("/login", validateLogin, async (req, res) => {
 // for test purpose to check which users are there in db
 router.get("/users", auth, async (req, res) => {
     try {
-        const users = await User.find().select("-password"); // exclude password
+        const users = await User.find().select("-password");
         res.json(users);
     } catch (err) {
         console.error(err.message);
